@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LucroMax - Calculadora de Margem de Lucro & Taxas de Marketplace</title>
+  <meta name="description" content="Calcule o lucro líquido real, margem de lucro e taxas de plataformas como Mercado Livre, Shopee, Amazon e iFood em segundos.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for clean dark UI */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+  <!-- Top Announcement / Affiliate Banner Slot -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 py-2.5 px-4">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">NOVO</span>
+        <span>Simulador de Taxas 2026 atualizado para Marketplaces!</span>
+      </div>
+      <!-- Monetization Slot: Banner or Affiliate Link -->
+      <a href="https://shopee.com.br" target="_blank" rel="noopener noreferrer" class="hover:text-brand-400 transition-colors flex items-center gap-1 font-medium text-slate-300">
+        📦 Precisa de embalagens baratas? <span class="underline text-brand-400">Ver ofertas na Shopee &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- Left Column: Controls & Input Form (7 cols) -->
+    <div class="lg:col-span-7 space-y-6">
+
+      <!-- Header & Branding -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl font-extrabold text-white flex items-center gap-2">
+            <span class="text-brand-500">⚡</span> LucroMax
+          </h1>
+          <span class="text-xs font-mono text-slate-500 bg-slate-900 px-2.5 py-1 rounded-md border border-slate-800">v1.2.0 &bull; 100% Grátis</span>
+        </div>
+        <p class="text-sm text-slate-400">Calcule o lucro líquido exato, markup e margem de cada produto vendido.</p>
+      </div>
+
+      <!-- Marketplace Presets -->
+      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Atalho de Plataformas</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button onclick="applyPreset('meli_classico')" class="preset-btn flex flex-col items-center p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-brand-500/50 transition-all group">
+            <span class="text-xs font-bold text-slate-200 group-hover:text-brand-400">Mercado Livre</span>
+            <span class="text-[10px] text-slate-400">Clássico (~12% + R$6,50)</span>
+          </button>
+          <button onclick="applyPreset('shopee')" class="preset-btn flex flex-col items-center p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-brand-500/50 transition-all group">
+            <span class="text-xs font-bold text-slate-200 group-hover:text-brand-400">Shopee</span>
+            <span class="text-[10px] text-slate-400">Padrao (14% + R$4,00)</span>
+          </button>
+          <button onclick="applyPreset('amazon')" class="preset-btn flex flex-col items-center p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-brand-500/50 transition-all group">
+            <span class="text-xs font-bold text-slate-200 group-hover:text-brand-400">Amazon</span>
+            <span class="text-[10px] text-slate-400">Geral (15%)</span>
+          </button>
+          <button onclick="applyPreset('direta')" class="preset-btn flex flex-col items-center p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-brand-500/50 transition-all group">
+            <span class="text-xs font-bold text-slate-200 group-hover:text-brand-400">Venda Direta</span>
+            <span class="text-[10px] text-slate-400">Site / WhatsApp (3%)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Input Form -->
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <!-- Preço de Venda -->
+          <div class="space-y-1.5">
+            <label for="venda" class="block text-xs font-medium text-slate-300">Preço de Venda (R$)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-500 text-sm">R$</span>
+              <input type="number" id="venda" step="0.01" min="0" placeholder="100.00" oninput="calculate()"
+                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+          </div>
+
+          <!-- Custo do Produto -->
+          <div class="space-y-1.5">
+            <label for="custo" class="block text-xs font-medium text-slate-300">Custo do Produto / MP (R$)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-500 text-sm">R$</span>
+              <input type="number" id="custo" step="0.01" min="0" placeholder="35.00" oninput="calculate()"
+                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+          </div>
+
+          <!-- Comissão do Marketplace (%) -->
+          <div class="space-y-1.5">
+            <label for="comissao" class="block text-xs font-medium text-slate-300">Comissão da Plataforma (%)</label>
+            <div class="relative">
+              <input type="number" id="comissao" step="0.1" min="0" placeholder="12" oninput="calculate()"
+                class="w-full pl-3 pr-8 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+              <span class="absolute right-3 top-2.5 text-slate-500 text-sm">%</span>
+            </div>
+          </div>
+
+          <!-- Taxa Fixa (R$) -->
+          <div class="space-y-1.5">
+            <label for="taxaFixa" class="block text-xs font-medium text-slate-300">Taxa Fixa por Venda (R$)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-500 text-sm">R$</span>
+              <input type="number" id="taxaFixa" step="0.01" min="0" placeholder="6.50" oninput="calculate()"
+                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+          </div>
+
+          <!-- Frete / Embalagem (R$) -->
+          <div class="space-y-1.5">
+            <label for="frete" class="block text-xs font-medium text-slate-300">Frete / Embalagem (R$)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-500 text-sm">R$</span>
+              <input type="number" id="frete" step="0.01" min="0" placeholder="5.00" oninput="calculate()"
+                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+          </div>
+
+          <!-- Imposto / Simples (%) -->
+          <div class="space-y-1.5">
+            <label for="imposto" class="block text-xs font-medium text-slate-300">Imposto / DAS (%)</label>
+            <div class="relative">
+              <input type="number" id="imposto" step="0.1" min="0" placeholder="4" oninput="calculate()"
+                class="w-full pl-3 pr-8 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+              <span class="absolute right-3 top-2.5 text-slate-500 text-sm">%</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Optional Product Name -->
+        <div class="pt-2">
+          <input type="text" id="produtoNome" placeholder="Nome do produto (Opcional para histórico)" 
+            class="w-full px-3 py-2 bg-slate-950/60 border border-slate-800 rounded-lg text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-slate-600">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live Results & Analytics (5 cols) -->
+    <div class="lg:col-span-5 space-y-6">
+
+      <!-- Result Card -->
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl space-y-6 relative overflow-hidden">
+        
+        <!-- Background Accent Glow -->
+        <div id="glowAccent" class="absolute -top-24 -right-24 w-48 h-48 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Resultado da Operação</span>
+          <button onclick="saveToHistory()" class="text-xs bg-brand-600 hover:bg-brand-500 text-white font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-md shadow-brand-900/30">
+            💾 Salvar
+          </button>
+        </div>
+
+        <!-- Profit Display -->
+        <div class="space-y-1">
+          <span class="text-xs text-slate-400 block">Lucro Líquido Real</span>
+          <div id="resLucro" class="text-4xl font-extrabold text-brand-400 font-mono tracking-tight">R$ 0,00</div>
+          <p id="resStatus" class="text-xs text-slate-500">Insira o preço de venda para calcular.</p>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400 block">Margem de Lucro</span>
+            <span id="resMargem" class="text-lg font-bold text-slate-100 font-mono">0.0%</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400 block">Markup Aplicado</span>
+            <span id="resMarkup" class="text-lg font-bold text-slate-100 font-mono">0.0%</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400 block">Total de Custos & Taxas</span>
+            <span id="resTotalCustos" class="text-lg font-bold text-amber-400/90 font-mono">R$ 0,00</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400 block">Retorno s/ Investimento</span>
+            <span id="resROI" class="text-lg font-bold text-slate-100 font-mono">0.0%</span>
+          </div>
+        </div>
+
+        <!-- Visual Bar Breakdown -->
+        <div class="space-y-2 pt-1">
+          <div class="flex justify-between text-xs text-slate-400">
+            <span>Distribuição do Preço de Venda</span>
+          </div>
+          <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden flex border border-slate-800">
+            <div id="barCusto" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%" title="Custo Produto"></div>
+            <div id="barTaxas" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%" title="Taxas & Impostos"></div>
+            <div id="barLucro" class="h-full bg-brand-500 transition-all duration-300" style="width: 0%" title="Lucro Líquido"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Custo</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Taxas/Impostos</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-brand-500"></span> Lucro</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2">
+          <button onclick="copySummary()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition-colors flex items-center justify-center gap-2">
+            📋 Copiar Relatório para WhatsApp / Bloco de Notas
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Monetization Slot: AdSense Banner Placeholder -->
+      <div class="bg-slate-900 border border-dashed border-slate-800 rounded-xl p-4 text-center space-y-2">
+        <span class="text-[10px] uppercase font-mono text-slate-500 tracking-wider">Publicidade / Parceiro</span>
+        <div class="h-20 bg-slate-950 rounded border border-slate-800 flex items-center justify-center text-xs text-slate-500 p-2">
+          [Espaço Reservado para Anúncios do Google AdSense ou Banners de Afiliados]
+        </div>
+      </div>
+
+    </div>
+
+    <!-- History Table Section (Full Width Bottom) -->
+    <div class="lg:col-span-12 bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Histórico de Cálculos Salvos</h2>
+          <p class="text-xs text-slate-400">Armazenado localmente no seu navegador.</p>
+        </div>
+        <button onclick="clearHistory()" class="text-xs text-rose-400 hover:text-rose-300 transition-colors">Limpar Histórico</button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-400 font-medium">
+              <th class="py-2 px-3">Produto</th>
+              <th class="py-2 px-3">Preço Venda</th>
+              <th class="py-2 px-3">Custo Total</th>
+              <th class="py-2 px-3">Lucro Líquido</th>
+              <th class="py-2 px-3">Margem %</th>
+              <th class="py-2 px-3 text-right">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody" class="divide-y divide-slate-800/50 text-slate-300">
+            <tr>
+              <td colspan="6" class="py-6 text-center text-slate-500 italic">Nenhum cálculo salvo ainda. Clique em "Salvar" acima.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-slate-800 py-6 px-4 bg-slate-950 text-center text-xs text-slate-500 space-y-2">
+    <p>LucroMax &copy; 2026 &bull; Ferramenta Utilitária Gratuita desenvolvida para Empreendedores e Vendedores.</p>
+    <p class="text-[11px] text-slate-600">Nenhum dado financeiro é enviado para servidores externos. Todos os cálculos são processados client-side.</p>
+  </footer>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 border border-slate-700 text-slate-100 text-xs px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none flex items-center gap-2">
+    <span id="toastIcon">✨</span>
+    <span id="toastMsg">Mensagem</span>
+  </div>
+
+  <script>
+    // Presets database
+    const presets = {
+      meli_classico: { comissao: 12, taxaFixa: 6.50, imposto: 4, frete: 0 },
+      shopee: { comissao: 14, taxaFixa: 4.00, imposto: 4, frete: 0 },
+      amazon: { comissao: 15, taxaFixa: 0, imposto: 4, frete: 0 },
+      direta: { comissao: 3, taxaFixa: 0, imposto: 4, frete: 0 }
+    };
+
+    function applyPreset(key) {
+      const p = presets[key];
+      if (!p) return;
+      document.getElementById('comissao').value = p.comissao;
+      document.getElementById('taxaFixa').value = p.taxaFixa;
+      document.getElementById('imposto').value = p.imposto;
+      if (p.frete !== undefined) document.getElementById('frete').value = p.frete;
+      
+      showToast("Preset aplicado com sucesso!");
+      calculate();
+    }
+
+    function calculate() {
+      const venda = parseFloat(document.getElementById('venda').value) || 0;
+      const custo = parseFloat(document.getElementById('custo').value) || 0;
+      const comissaoPct = parseFloat(document.getElementById('comissao').value) || 0;
+      const taxaFixa = parseFloat(document.getElementById('taxaFixa').value) || 0;
+      const frete = parseFloat(document.getElementById('frete').value) || 0;
+      const impostoPct = parseFloat(document.getElementById('imposto').value) || 0;
+
+      // Logic
+      const valorComissao = venda * (comissaoPct / 100);
+      const valorImposto = venda * (impostoPct / 100);
+      const totalTaxasEImpostos = valorComissao + taxaFixa + valorImposto + frete;
+      const custoTotalOp = custo + totalTaxasEImpostos;
+      const lucroLiquido = venda - custoTotalOp;
+
+      const margemPct = venda > 0 ? (lucroLiquido / venda) * 100 : 0;
+      const markupPct = custo > 0 ? (lucroLiquido / custo) * 100 : 0;
+      const roiPct = custoTotalOp > 0 ? (lucroLiquido / custoTotalOp) * 100 : 0;
+
+      // Update UI
+      const resLucro = document.getElementById('resLucro');
+      resLucro.innerText = formatBRL(lucroLiquido);
+
+      if (venda === 0) {
+        resLucro.className = "text-4xl font-extrabold text-slate-400 font-mono tracking-tight";
+        document.getElementById('resStatus').innerText = "Insira o preço de venda para calcular.";
+      } else if (lucroLiquido > 0) {
+        resLucro.className = "text-4xl font-extrabold text-brand-400 font-mono tracking-tight";
+        document.getElementById('resStatus').innerText = "🟢 Operação Lucrativa";
+      } else if (lucroLiquido === 0) {
+        resLucro.className = "text-4xl font-extrabold text-amber-400 font-mono tracking-tight";
+        document.getElementById('resStatus').innerText = "🟡 Ponto de Equilíbrio (Empate)";
+      } else {
+        resLucro.className = "text-4xl font-extrabold text-rose-500 font-mono tracking-tight";
+        document.getElementById('resStatus').innerText = "🔴 Operação no Prejuízo!";
+      }
+
+      document.getElementById('resMargem').innerText = `${margemPct.toFixed(1)}%`;
+      document.getElementById('resMarkup').innerText = `${markupPct.toFixed(1)}%`;
+      document.getElementById('resTotalCustos').innerText = formatBRL(custoTotalOp);
+      document.getElementById('resROI').innerText = `${roiPct.toFixed(1)}%`;
+
+      // Visual Bar
+      if (venda > 0) {
+        const pctCusto = Math.max(0, Math.min(100, (custo / venda) * 100));
+        const pctTaxas = Math.max(0, Math.min(100, (totalTaxasEImpostos / venda) * 100));
+        const pctLucro = Math.max(0, Math.min(100, (lucroLiquido / venda) * 100));
+
+        document.getElementById('barCusto').style.width = `${pctCusto}%`;
+        document.getElementById('barTaxas').style.width = `${pctTaxas}%`;
+        document.getElementById('barLucro').style.width = `${pctLucro}%`;
+      } else {
+        document.getElementById('barCusto').style.width = `0%`;
+        document.getElementById('barTaxas').style.width = `0%`;
+        document.getElementById('barLucro').style.width = `0%`;
+      }
+    }
+
+    function formatBRL(val) {
+      return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function copySummary() {
+      const venda = parseFloat(document.getElementById('venda').value) || 0;
+      if (venda === 0) {
+        showToast("Preencha os dados antes de copiar!", "⚠️");
+        return;
+      }
+
+      const nome = document.getElementById('produtoNome').value || "Produto Sem Nome";
+      const lucro = document.getElementById('resLucro').innerText;
+      const margem = document.getElementById('resMargem').innerText;
+      const custoTotal = document.getElementById('resTotalCustos').innerText;
+
+      const summary = `📊 *Resumo de Lucro - LucroMax*\n` +
+        `📦 Produto: ${nome}\n` +
+        `💵 Preço de Venda: ${formatBRL(venda)}\n` +
+        `💸 Total Custos/Taxas: ${custoTotal}\n` +
+        `🟢 Lucro Líquido: ${lucro}\n` +
+        `📈 Margem: ${margem}\n\n` +
+        `Calculado via LucroMax`;
+
+      navigator.clipboard.writeText(summary).then(() => {
+        showToast("Relatório copiado para a área de transferência!");
+      });
+    }
+
+    // Local Storage History
+    function saveToHistory() {
+      const venda = parseFloat(document.getElementById('venda').value) || 0;
+      if (venda === 0) {
+        showToast("Preencha o preço de venda para salvar!", "⚠️");
+        return;
+      }
+
+      const nome = document.getElementById('produtoNome').value || "Produto sem nome";
+      const custo = parseFloat(document.getElementById('custo').value) || 0;
+      const comissao = parseFloat(document.getElementById('comissao').value) || 0;
+      const taxaFixa = parseFloat(document.getElementById('taxaFixa').value) || 0;
+      const frete = parseFloat(document.getElementById('frete').value) || 0;
+      const imposto = parseFloat(document.getElementById('imposto').value) || 0;
+
+      const totalTaxas = (venda * (comissao / 100)) + taxaFixa + frete + (venda * (imposto / 100));
+      const custoTotal = custo + totalTaxas;
+      const lucro = venda - custoTotal;
+      const margem = venda > 0 ? (lucro / venda) * 100 : 0;
+
+      const item = {
+        id: Date.now(),
+        nome,
+        venda,
+        custoTotal,
+        lucro,
+        margem
+      };
+
+      const history = JSON.parse(localStorage.getItem('lucromax_history') || '[]');
+      history.unshift(item);
+      if (history.length > 10) history.pop(); // keep last 10
+      localStorage.setItem('lucromax_history', JSON.stringify(history));
+
+      renderHistory();
+      showToast("Cálculo salvo no histórico!");
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem('lucromax_history') || '[]');
+      const tbody = document.getElementById('historyBody');
+
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500 italic">Nenhum cálculo salvo ainda. Clique em "Salvar" acima.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = history.map(item => `
+        <tr class="hover:bg-slate-800/40 transition-colors">
+          <td class="py-2.5 px-3 font-medium text-slate-200">${escapeHtml(item.nome)}</td>
+          <td class="py-2.5 px-3 font-mono">${formatBRL(item.venda)}</td>
+          <td class="py-2.5 px-3 font-mono text-amber-400/90">${formatBRL(item.custoTotal)}</td>
+          <td class="py-2.5 px-3 font-mono font-bold ${item.lucro >= 0 ? 'text-brand-400' : 'text-rose-400'}">${formatBRL(item.lucro)}</td>
+          <td class="py-2.5 px-3 font-mono">${item.margem.toFixed(1)}%</td>
+          <td class="py-2.5 px-3 text-right">
+            <button onclick="deleteHistoryItem(${item.id})" class="text-slate-500 hover:text-rose-400 transition-colors">✕</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteHistoryItem(id) {
+      let history = JSON.parse(localStorage.getItem('lucromax_history') || '[]');
+      history = history.filter(i => i.id !== id);
+      localStorage.setItem('lucromax_history', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      localStorage.removeItem('lucromax_history');
+      renderHistory();
+      showToast("Histórico limpado.");
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function showToast(msg, icon = "✨") {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      document.getElementById('toastIcon').innerText = icon;
+
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // Initial render
+    renderHistory();
+  </script>
+</body>
+</html>
